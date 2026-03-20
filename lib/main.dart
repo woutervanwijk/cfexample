@@ -21,80 +21,92 @@ class _MyAppState extends State<MyApp> {
   String? fileContent;
   CodeForgeController? codeController;
 
-  Future<void> loadAsset() async {
-    fileContent = await rootBundle.loadString('assets/mozilla.org.html');
+  Future<void> loadAsset(String fileName) async {
+    fileContent = await rootBundle.loadString('assets/$fileName');
+    codeController?.text = fileContent ?? 'No content';
   }
 
   @override
   void initState() {
     super.initState();
-    loadAsset();
+    codeController = CodeForgeController();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await loadAsset('example.html');
+      setState(() {});
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            codeController?.setGitDiffDecorations(
-              addedRanges: [(1, 5), (10, 25)],
-              removedRanges: [
-                (
-                  afterLine: 29,
-                  content:
-                      'final x = 10;\nfinal y = 20;\nprint("removed line");',
+        appBar: AppBar(
+          title: const Text('Code Example'),
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: (value) async {
+                await loadAsset(value);
+                setState(() {});
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'example.html',
+                  child: Text('Example'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'mozilla.org.html',
+                  child: Text('Mozilla'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'nytimes.com.html',
+                  child: Text('NYTimes'),
                 ),
               ],
-            );
-            codeController?.scrollToLine(30);
-          },
+            ),
+          ],
         ),
         body: SafeArea(
-          child: FutureBuilder<void>(
-            future: loadAsset(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (fileContent == null) {
-                return const Center(child: Text("Failed to load asset"));
-              }
-              return CodeForge(
-                undoController: undoController,
-                language: langXml,
-                editorTheme: atomOneDarkReasonableTheme,
-                controller: codeController,
-                textStyle: const TextStyle(
-                  fontSize: 16,
-                  fontFamily: 'monospace',
+          child: fileContent == null
+              ? const Center(child: CircularProgressIndicator())
+              : CodeForge(
+                  undoController: undoController,
+                  language: langXml,
+                  editorTheme: atomOneDarkReasonableTheme,
+                  controller: codeController,
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'mono',
+                    fontFamilyFallback: [
+                      'Courier',
+                      'Courier New',
+                      'SF Mono',
+                      'monospace',
+                    ],
+                  ),
+                  initialText: fileContent,
+                  matchHighlightStyle: const MatchHighlightStyle(
+                    currentMatchStyle: TextStyle(
+                      backgroundColor: Color(0xFFFFA726),
+                    ),
+                    otherMatchStyle: TextStyle(
+                      backgroundColor: Color(0x55FFFF00),
+                    ),
+                  ),
+                  finderBuilder: (c, controller) =>
+                      FindPanelView(controller: controller),
+                  customCodeSnippets: [
+                    CustomCodeSnippet(
+                      label: 'if',
+                      value: 'if (condition) {\n  \n}',
+                      cursorLocations: {4},
+                    ),
+                    CustomCodeSnippet(
+                      label: 'if-else',
+                      value: 'if (condition) {\n  \n} else {\n  \n}',
+                      cursorLocations: {18, 31},
+                    ),
+                  ],
                 ),
-                initialText: fileContent,
-                matchHighlightStyle: const MatchHighlightStyle(
-                  currentMatchStyle: TextStyle(
-                    backgroundColor: Color(0xFFFFA726),
-                  ),
-                  otherMatchStyle: TextStyle(
-                    backgroundColor: Color(0x55FFFF00),
-                  ),
-                ),
-                finderBuilder: (c, controller) =>
-                    FindPanelView(controller: controller),
-                customCodeSnippets: [
-                  CustomCodeSnippet(
-                    label: 'if',
-                    value: 'if (condition) {\n  \n}',
-                    cursorLocations: {4},
-                  ),
-                  CustomCodeSnippet(
-                    label: 'if-else',
-                    value: 'if (condition) {\n  \n} else {\n  \n}',
-                    cursorLocations: {18, 31},
-                  ),
-                ],
-              );
-            },
-          ),
         ),
       ),
     );

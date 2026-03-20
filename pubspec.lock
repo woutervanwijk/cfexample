@@ -44,9 +44,10 @@ packages:
   code_forge:
     dependency: "direct main"
     description:
-      path: ".."
-      relative: true
-    source: path
+      name: code_forge
+      sha256: da884e812eb6e78432279ab263b21805c58e1fb53f5371a73af27e68901042c5
+      url: "https://pub.dev"
+    source: hosted
     version: "9.2.0"
   collection:
     dependency: transitive

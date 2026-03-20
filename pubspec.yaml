@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  code_forge: { path: ../ }
+  code_forge: ^9.2.0
   cupertino_icons: ^1.0.8
   re_highlight: ^0.0.3
   google_fonts: ^6.3.3
@@ -28,3 +28,4 @@ flutter:
   assets:
     - assets/mozilla.org.html
     - assets/nytimes.com.html
+    - assets/example.html
