@@ -70,6 +70,8 @@ class _MyAppState extends State<MyApp> {
           child: fileContent == null
               ? const Center(child: CircularProgressIndicator())
               : CodeForge(
+                  lineWrap: true,
+                  // enableGuideLines: true,
                   undoController: undoController,
                   language: langXml,
                   editorTheme: atomOneDarkReasonableTheme,
