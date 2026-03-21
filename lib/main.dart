@@ -20,10 +20,17 @@ class _MyAppState extends State<MyApp> {
   final undoController = UndoRedoController();
   String? fileContent;
   CodeForgeController? codeController;
+  bool lineWrapEnabled = true;
 
   Future<void> loadAsset(String fileName) async {
     fileContent = await rootBundle.loadString('assets/$fileName');
     codeController?.text = fileContent ?? 'No content';
+  }
+
+  void toggleLineWrap() {
+    setState(() {
+      lineWrapEnabled = !lineWrapEnabled;
+    });
   }
 
   @override
@@ -44,6 +51,13 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Code Example'),
           actions: [
+            IconButton(
+              icon: Icon(lineWrapEnabled ? Icons.wrap_text : Icons.text_fields),
+              tooltip: lineWrapEnabled
+                  ? 'Disable Word Wrap'
+                  : 'Enable Word Wrap',
+              onPressed: toggleLineWrap,
+            ),
             PopupMenuButton<String>(
               onSelected: (value) async {
                 await loadAsset(value);
@@ -55,12 +69,12 @@ class _MyAppState extends State<MyApp> {
                   child: Text('Example'),
                 ),
                 const PopupMenuItem<String>(
-                  value: 'mozilla.org.html',
-                  child: Text('Mozilla'),
+                  value: 'example2.html',
+                  child: Text('Example 2'),
                 ),
                 const PopupMenuItem<String>(
-                  value: 'nytimes.com.html',
-                  child: Text('NYTimes'),
+                  value: 'example3.html',
+                  child: Text('Example 3'),
                 ),
               ],
             ),
@@ -70,8 +84,10 @@ class _MyAppState extends State<MyApp> {
           child: fileContent == null
               ? const Center(child: CircularProgressIndicator())
               : CodeForge(
-                  lineWrap: true,
-                  // enableGuideLines: true,
+                  lineWrap: lineWrapEnabled,
+                  enableGuideLines: false,
+                  enableKeyboardSuggestions: false,
+                  enableSuggestions: false,
                   undoController: undoController,
                   language: langXml,
                   editorTheme: atomOneDarkReasonableTheme,

@@ -26,6 +26,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/mozilla.org.html
-    - assets/nytimes.com.html
     - assets/example.html
+    - assets/example2.html
+    - assets/example3.html
