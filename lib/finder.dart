@@ -1,5 +1,6 @@
 import 'package:code_forge/code_forge.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 const EdgeInsetsGeometry _kFindMargin = EdgeInsets.only(right: 10);
 const double _kFindPanelWidth = 360;
@@ -29,81 +30,86 @@ class FindPanelView extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!controller.isActive) {
-      return const SizedBox.shrink();
-    }
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) {
+        if (!controller.isActive) {
+          return const SizedBox.shrink();
+        }
 
-    return Container(
-      margin: _kFindMargin,
-      alignment: Alignment.topRight,
-      height: preferredSize.height,
+        return Container(
+          margin: _kFindMargin,
+          alignment: Alignment.topRight,
+          height: preferredSize.height,
 
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Focus(
-          canRequestFocus: false,
-          onKeyEvent: (n, e) {
-            if (e.logicalKey == .escape) {
-              controller.isActive = false;
-              return KeyEventResult.handled;
-            }
-            if (e.logicalKey == .tab &&
-                controller.isReplaceMode &&
-                controller.findInputFocusNode.hasFocus) {
-              controller.replaceInputFocusNode.requestFocus();
-              return KeyEventResult.handled;
-            }
-            return KeyEventResult.ignored;
-          },
-          child: Container(
-            width: _kFindPanelWidth,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    controller.isReplaceMode
-                        ? Icons.keyboard_arrow_down
-                        : Icons.keyboard_arrow_right,
-                  ),
-                  style: IconButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Focus(
+              canRequestFocus: false,
+              onKeyEvent: (n, e) {
+                if (e.logicalKey == LogicalKeyboardKey.escape) {
+                  controller.isActive = false;
+                  return KeyEventResult.handled;
+                }
+                if (e.logicalKey == LogicalKeyboardKey.tab &&
+                    controller.isReplaceMode &&
+                    controller.findInputFocusNode.hasFocus) {
+                  controller.replaceInputFocusNode.requestFocus();
+                  return KeyEventResult.handled;
+                }
+                return KeyEventResult.ignored;
+              },
+              child: Container(
+                width: _kFindPanelWidth,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        controller.isReplaceMode
+                            ? Icons.keyboard_arrow_down
+                            : Icons.keyboard_arrow_right,
+                      ),
+                      style: IconButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(
+                        maxWidth: 20,
+                        minHeight: preferredSize.height,
+                        maxHeight: preferredSize.height,
+                      ),
+                      tooltip: 'Toggle Replace',
+                      onPressed: () {
+                        controller.toggleReplaceMode();
+                        // if (controller.isReplaceMode) {
+                        //   controller.replaceInputFocusNode.requestFocus();
+                        // }
+                      },
                     ),
-                  ),
-                  padding: .zero,
-                  constraints: BoxConstraints(
-                    maxWidth: 20,
-                    minHeight: preferredSize.height,
-                    maxHeight: preferredSize.height,
-                  ),
-                  tooltip: 'Toggle Replace',
-                  onPressed: () {
-                    controller.toggleReplaceMode();
-                    // if (controller.isReplaceMode) {
-                    //   controller.replaceInputFocusNode.requestFocus();
-                    // }
-                  },
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildFindRow(context),
+                          if (controller.isReplaceMode) _buildReplaceRow(context),
+                          if (!controller.isReplaceMode) const SizedBox(height: 2),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildFindRow(context),
-                      if (controller.isReplaceMode) _buildReplaceRow(context),
-                      if (!controller.isReplaceMode) const SizedBox(height: 2),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

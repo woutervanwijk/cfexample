@@ -20,6 +20,7 @@ class _MyAppState extends State<MyApp> {
   final undoController = UndoRedoController();
   String? fileContent;
   CodeForgeController? codeController;
+  FindController? _findController;
   bool lineWrapEnabled = true;
 
   Future<void> loadAsset(String fileName) async {
@@ -37,6 +38,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     codeController = CodeForgeController();
+    _findController = FindController(codeController!);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await loadAsset('example.html');
       setState(() {});
@@ -57,6 +59,15 @@ class _MyAppState extends State<MyApp> {
                   ? 'Disable Word Wrap'
                   : 'Enable Word Wrap',
               onPressed: toggleLineWrap,
+            ),
+            IconButton(
+              icon: const Icon(Icons.search),
+              tooltip: 'Find',
+              onPressed: () {
+                setState(() {
+                  _findController?.isActive = true;
+                });
+              },
             ),
             PopupMenuButton<String>(
               onSelected: (value) async {
@@ -89,6 +100,7 @@ class _MyAppState extends State<MyApp> {
                   enableKeyboardSuggestions: false,
                   enableSuggestions: false,
                   undoController: undoController,
+                  findController: _findController,
                   language: langXml,
                   editorTheme: atomOneDarkReasonableTheme,
                   controller: codeController,
@@ -111,8 +123,9 @@ class _MyAppState extends State<MyApp> {
                       backgroundColor: Color(0x55FFFF00),
                     ),
                   ),
-                  finderBuilder: (c, controller) =>
-                      FindPanelView(controller: controller),
+                  finderBuilder: (c, controller) {
+                    return FindPanelView(controller: _findController!);
+                  },
                   customCodeSnippets: [
                     CustomCodeSnippet(
                       label: 'if',
